@@ -1,0 +1,28 @@
+#!/usr/bin/perl -w
+#use strict;
+use Parallel::ForkManager;
+use Tie::File;
+
+# set the maximum number of processes (threads) 
+my $max_procs = 14;
+# start the ForkManager which creates the processes
+my $pm = Parallel::ForkManager->new($max_procs);
+my $i=1;
+my $queue_file = "/queue/.queuefile";
+
+my $lockfile = tie my @queue, 'Tie::File', $queue_file or die print "Can't open file $!\n";
+$lockfile->flock;
+
+@runlines = @queue;
+@queue = ();
+
+# undefine $lockfile and release the .queuefile  
+undef $lockfile;
+untie @queue;
+
+RUNS:
+foreach my $i ( 0 .. $#runlines ) {
+	my $pid = $pm->start($i) and next RUNS;
+	system($runlines[$i]);
+	$pm->finish;
+}
