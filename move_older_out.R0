@@ -1,0 +1,36 @@
+#!/usr/bin/perl -w
+use diagnostics;
+use List::Util qw(min);
+use Cwd;
+use File::Copy;
+@inputs = glob('*.out');
+foreach (@inputs) { 
+  my $outfile=$_;
+  @names=split(/_/,$outfile);
+  foreach $list (@names) {
+    if (($list =~ /^\d+$/)) {
+	  $caseno{$outfile} = $list;
+	  last;
+	}
+  }  
+$timestamp{$outfile} = ((stat($outfile))[9]);
+}
+
+foreach $key1 (keys %caseno) {
+  if (-e $key1) {	
+    foreach $key2 (keys %caseno) {
+	  if ($caseno{$key1} == $caseno{$key2}) {
+	    if ($timestamp{$key1} < $timestamp{$key2}) {
+          print "$key1 is older than $key2 so it will be moved to an archive folder!\n";
+		  $archivedir = getcwd."//archive";
+		  mkdir $archivedir;
+		  my $newname1 = $archivedir."//".$key1;
+          move($key1, $newname1);                				
+		  my $newname2 = $archivedir."//".substr($key1,0,-4).".inp";
+          move(substr($key1,0,-4).".inp", $newname2);
+          last;				
+	    }
+      }
+	}
+  }
+}

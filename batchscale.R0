@@ -1,0 +1,44 @@
+#!/usr/bin/perl -w
+use diagnostics;
+@inputs = glob('*.inp');
+if ($ARGV[0]) {
+	$num_batch = $ARGV[0]}
+	else {
+	$num_batch=14;}
+$num_files = @inputs;
+$num_in_batch = int($num_files/$num_batch);
+$num_leftover = ($num_files - ($num_in_batch*$num_batch));
+$i = 1;
+$j = 0;
+while ($i<$num_batch+1){
+  $filename = "sbatch".($i).".bat";
+  open(BATCHFILE,'>',$filename) or die $!;
+  print $filename."\n"; 
+  if ($i<=$num_leftover) {
+    $test_batch = $num_in_batch*$i+$i;
+#   print $test_batch."\n";
+  }else{
+    $test_batch = $num_in_batch*$i+$num_leftover; 
+#    print $test_batch."\n";
+  }   
+  while ($j<$test_batch){
+   print BATCHFILE "@echo off\n";
+   print BATCHFILE "CALL C:\\SCALE-6.2.4\\bin\\scalerte.exe -m ".$inputs[$j]."\n";	  
+   print BATCHFILE "del ".substr($inputs[$j],0,-4).".msg\n";
+   print BATCHFILE "move $inputs[$j] ..\\\n";
+   print BATCHFILE "move ".substr($inputs[$j],0,-4).".out ..\\\n";
+   $j++;
+   }
+   $i++;
+   print BATCHFILE "exit";
+   close(BATCHFILE);
+  }
+open(master_file,'>',"masterbatch.bat") or die $!;
+$i=1;
+while ($i<$num_batch+1){
+    $filename = "sbatch".($i).".bat";
+	print master_file "start ".$filename."\n";
+	$i++;
+}
+close(master_file);
+chmod 0755, "masterbatch.bat";

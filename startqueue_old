@@ -1,0 +1,57 @@
+#!/usr/bin/perl -w
+#use strict;
+use Parallel::ForkManager;
+use Tie::File;
+use vars qw($line);
+#use vars qw($queue_file @queue);
+
+# set the maximum number of processes (threads) 
+my $max_procs = 2;
+# start the ForkManager which creates the processes
+my $pm = Parallel::ForkManager->new($max_procs);
+# initialize count variable to zero
+my $i=1;
+my $queue_file = "/queue/.queuefile";
+# for ( ; ; ) {
+# open the .queuefile using Tie to allow removing lines Lock it while reading.
+#	print "This is time number ".$i++." in the infinite loop!\n";
+	
+#	my $lockfile = tie my @queue, 'Tie::File', "/queue/.queuefile" or die print $!;
+	tie my @queue, 'Tie::File', $queue_file or die print "Can't open file $!\n";
+
+#	$lockfile->flock;
+# get the first line of the .queuefile
+#	$line = shift @queue;
+
+#	print "Here's the shifted line $line\n";
+#	print "First line of the queue file after shift $queue[0]\n\n";
+
+# check to see if the line is blank. If not, then proceed to submit if count less than max_procs	
+	print "This is the line before the fork!\n";
+
+#    @queue = qw(Bill Lauren Joel Emily Martie Kenny Cinnamon);
+    foreach $i (0 .. $#queue) {print "$queue[$i]\n";}
+    $line = $queue[0];
+    shift @queue;
+#    my $line = $queue[0];
+#	print "First item is $queue[0]\n";
+	print "It's also $line\n";
+    unless ($line) {
+		print "It's also $line\n";
+    }
+	
+
+#    if ($line ne "") {
+#	for my $line (0 .. $#queue) {
+# 		my $pid = $pm->start($queue[$line]) and next LINES;
+#		print "$queue[$line] is started!\n";
+#		sleep 2;
+#		print "Time's up for $line! Submitting more!\n";
+#		system($line);
+#		$pm->finish;
+#	}
+
+# release the .queuefile  
+	untie @queue;
+#sleep 10;
+#}

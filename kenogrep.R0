@@ -1,0 +1,22 @@
+#!/usr/bin/perl -w
+use diagnostics;
+@inputs = glob('*.out');
+#unlink ("keffout.txt");
+open(KEFFOUT, '>', '.\keffout.txt') or die("Can't write to keffout.txt");
+foreach (@inputs) { 
+	open(OUTFILE,'<',$_) or die("File $_ not found");
+	foreach (split(/_/,substr($_,0,-4))) {print KEFFOUT "$_ "};  
+	while ($string = <OUTFILE>) {
+	  if($string =~ /best/) {
+		@results = split(/ /,$string);
+		@results = grep /\S/, @results;
+		print KEFFOUT $results[5]," ";
+		print KEFFOUT $results[9]," ";
+		print KEFFOUT $results[5]+2*$results[9];
+	  last;
+	  }
+	}
+	close(OUTFILE);
+	print KEFFOUT "\n";
+}
+close(KEFFOUT);

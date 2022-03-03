@@ -1,0 +1,39 @@
+#!/usr/bin/perl -w
+use diagnostics;
+use Win32;
+use File::Copy;
+use Fcntl qw(:flock);
+use Cwd qw(getcwd);
+
+$wormfile = $ARGV[0];
+$i = 1;
+$rundir = "run".$i;
+while (-d $rundir) {
+  $rundir = "run".$i;
+  $i++;
+}
+mkdir $rundir;
+copy($wormfile,$rundir."/".$wormfile);
+chdir($rundir);
+system("worm $wormfile > /dev/null");
+@inputs = glob('*.inp');
+foreach $file (@inputs) {
+  $original_file = $file;
+  $new_file = "../".$file;
+  move($original_file, $new_file);
+}
+chdir "../";
+$dir = getcwd;	
+
+$queue_file = "/queue/.queuefile";
+
+open (my $fh, '>>', $queue_file);
+flock($fh, LOCK_SH);
+flock($fh, LOCK_EX);
+$i=1;
+foreach $file (@inputs) {
+	print $fh "execmcnp $dir $file\n";		
+}
+
+close ($fh) or die "Cannot close";
+system ("rm -rf $rundir");

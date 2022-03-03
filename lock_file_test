@@ -1,0 +1,11 @@
+#!/usr/bin/perl -w
+use diagnostics;
+use Win32;
+use File::Copy;
+use Fcntl qw(:flock);
+
+$queue_file = "/queue/.queuefile";
+open (my $fh, '>>', $queue_file);
+flock($fh, LOCK_EX);
+sleep(20);
+close ($fh) or die "Cannot close";

@@ -1,0 +1,22 @@
+#!/usr/bin/perl -w
+use diagnostics;
+use File::Copy;
+$wormfile = $ARGV[0];
+$i = 1;
+$rundir = "run".$i;
+while (-d $rundir) {
+  $rundir = "run".$i;
+  $i++;
+}
+mkdir $rundir;
+copy($wormfile,$rundir."/".$wormfile);
+print "$wormfile copied to $rundir\n";
+chdir($rundir);
+system("worm $wormfile");
+if ($ARGV[1]) {
+	system("batchmcnp6 $ARGV[1]");
+}
+else {
+	system("batchmcnp6");
+}
+system("cmd /c masterbatch.bat");

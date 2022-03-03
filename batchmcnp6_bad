@@ -1,0 +1,45 @@
+#!/usr/bin/perl -w
+use diagnostics;
+@inputs = glob('*.inp');
+if ($ARGV[0]) {
+	$num_batch = $ARGV[0]}
+	else {
+	$num_batch=14;}
+$num_files = @inputs;
+$num_in_batch = int($num_files/$num_batch);
+$num_leftover = ($num_files - ($num_in_batch*$num_batch));
+$i = 1;
+$j = 0;
+while ($i<$num_batch+1){
+  if ($i<=$num_leftover) {
+    $test_batch = $num_in_batch*$i+$i;
+  }
+  else{
+    $test_batch = $num_in_batch*$i+$num_leftover; 
+  }   
+  $filename = "mbatch".($i).".bat";
+  print $j,"\n";
+  print $inputs[$j];
+  <STDIN>;
+  while (-e $inputs[$j]) {
+    open(BATCHFILE,'>',$filename) or die $!;
+    while ($j<$test_batch){
+      print BATCHFILE "CALL C:\\MCNP6.2\\MCNP_CODE\\bin\\mcnp6.exe inp=".$inputs[$j]." out=".substr($inputs[$j],0,-4).".out"." srctp=".substr($inputs[$j],0,-4).".src"." runtpe=".substr($inputs[$j],0,-4).".run"."\n";	  
+      print BATCHFILE "del ".substr($inputs[$j],0,-4).".src"." ".substr($inputs[$j],0,-4).".run\n";
+      $j++;
+    }
+      $i++;
+      print BATCHFILE "exit";
+    close(BATCHFILE);
+	last;
+  }
+}
+open(MASTERFILE,'>',"masterbatch.bat") or die $!;
+$i=1;
+while ($i<$num_batch+1){
+    $filename = "mbatch".($i).".bat";
+	print MASTERFILE "start ".$filename."\n";
+	$i++;
+}
+close(MASTERFILE);
+chmod 0755, "masterbatch.bat";
